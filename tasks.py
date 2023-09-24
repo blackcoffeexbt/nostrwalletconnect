@@ -30,7 +30,7 @@ async def process_nostr_message( msg: str):
             _, event = rest
             event = NostrEvent(**event)
             if event.kind == EventKind.WALLET_CONNECT_REQUEST:
-                logger.info(f"Wallet connect request received: {event.dict()}")
+            #     TODO: raise an asyncio event and somehow pay the invoice......
             return
 
     except Exception as ex:
