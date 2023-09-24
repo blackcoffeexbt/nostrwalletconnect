@@ -1,0 +1,6 @@
+{
+    "name": "Nostr Wallet Connect",
+    "short_description": "Use LNbits as a Nostr Wallet Connect Wallet Service",
+    "tile": "/nostrwalletconnect/static/bitcoin-extension.png",
+    "contributors": ["github_username"]
+}

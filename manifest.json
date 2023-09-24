@@ -1,0 +1,9 @@
+{
+    "repos": [
+        {
+            "id": "nostrwalletconnect",
+            "organisation": "lnbits",
+            "repository": "nostrwalletconnect"
+        }
+    ]
+}
