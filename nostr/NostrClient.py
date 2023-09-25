@@ -35,8 +35,8 @@ class NostrClient:
 
         logger.info(f"Subscribing to websockets for nostrclient extension")
         ws = WebSocketApp(
-            f"ws://localhost:{settings.port}/nostrclient/api/v1/relay",
-            # "wss://nostr-pub.wellorder.net",
+            # f"ws://localhost:{settings.port}/nostrclient/api/v1/relay",
+            "wss://relay.damus.io",
             on_message=on_message,
             on_open=on_open,
             on_error=on_error,
@@ -105,7 +105,7 @@ class NostrClient:
         )
 
     def _filters_for_service_request_messages(self, wallet_service_pubkey: str, since: int) -> List:
-        out_messages_filter = {"kinds": [EventKind.WALLET_CONNECT_REQUEST], "#p": wallet_service_pubkey}
+        out_messages_filter = {"kinds": [EventKind.WALLET_CONNECT_REQUEST], "#p": [wallet_service_pubkey]}
         if since and since != 0:
             out_messages_filter["since"] = since
 

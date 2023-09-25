@@ -45,9 +45,6 @@ def nostrwalletconnect_start():
     from lnbits.tasks import catch_everything_and_restart
     from lnbits.app import settings
 
-    # TODO: un-hardcode this
-    wallet_connect_secret = "362805b0d6ebec963f098ca849e7228d4ece39d970d8f97af5bdccdecdc80ea1"
-
     nostr_client = NostrClient()
 
     scheduled_tasks: List[Task] = []
@@ -58,29 +55,26 @@ def nostrwalletconnect_start():
     private_key = PrivateKey(pk)
     service_pubkey_hex = private_key.public_key.hex()
 
-    # every time lnbits starts, we need to send an info event to relays to inform the relay of
-    # the wallet connect service's capabilities
-    capabilities_event = get_service_capabilities_event(service_pubkey_hex)
-
-    async def _publish_capabilities_event():
-        await nostr_client.publish_nostr_event(capabilities_event)
-
     async def _subscribe_to_nostr_request():
         # wait for 'nostrclient' extension to initialize
         await asyncio.sleep(10)
         await nostr_client.run_forever()
         raise ValueError("Must reconnect to websocket")
 
+    async def _publish_capabilities_event():
+        # every time lnbits starts, we need to send an info event to relays to inform the relay of
+        # the wallet connect service's capabilities
+        await asyncio.sleep(15)
+        capabilities_event = get_service_capabilities_event(service_pubkey_hex)
+        await nostr_client.publish_nostr_event(capabilities_event)
+
     async def _wait_for_nostr_events():
         # wait for this extension to initialize
         await asyncio.sleep(15)
         await wait_for_nostr_events(nostr_client, service_privkey_hex)
-        # wait for asyncio event
-
-        # await asyncio.sleep(15)
-        # await _publish_capabilities_event()
 
     loop = asyncio.get_event_loop()
     task1 = loop.create_task(catch_everything_and_restart(_subscribe_to_nostr_request))
     task2 = loop.create_task(catch_everything_and_restart(_wait_for_nostr_events))
-    scheduled_tasks.extend([task1, task2])
+    task3 = loop.create_task(catch_everything_and_restart(_publish_capabilities_event))
+    scheduled_tasks.extend([task1, task2, task3])
