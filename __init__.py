@@ -74,7 +74,9 @@ def nostrwalletconnect_start():
     async def _wait_for_nostr_events():
         # wait for this extension to initialize
         await asyncio.sleep(15)
-        await wait_for_nostr_events(nostr_client, service_pubkey_hex)
+        await wait_for_nostr_events(nostr_client, service_privkey_hex)
+        # wait for asyncio event
+
         # await asyncio.sleep(15)
         # await _publish_capabilities_event()
 
