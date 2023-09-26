@@ -33,7 +33,6 @@ def sign_message_hash(private_key: str, hash: bytes) -> str:
 async def subscribe_to_wallet_service_requests(nostr_client: NostrClient, wallet_connect_service_pubkey: str):
     # get env NOSTR_WALLET_CONNECT_PUBKEY value
     logger.info("Subscribing to wallet service requests")
-    logger.info(f"Wallet service pubkey: {wallet_connect_service_pubkey}")
 
     await nostr_client.subscribe_wallet_connect_client_requests(wallet_connect_service_pubkey)
 
@@ -57,9 +56,6 @@ async def process_nostr_message(nostr_client: NostrClient, msg: str, private_key
 
 async def handle_pay_invoice_request(nostr_client: NostrClient, private_key_hex: str, request_event: NostrEvent):
     # log event, private key hex and event pk
-    logger.info(f"Event: {request_event.dict()}")
-    logger.info(f"Private key hex: {private_key_hex}")
-    logger.info(f"Event pk: {request_event.pubkey}")
     encryption_key = get_shared_secret(private_key_hex, request_event.pubkey)
     request_message_str = decrypt_message(request_event.content, encryption_key)
     # message is a json string, turn into an object
@@ -82,12 +78,10 @@ async def handle_pay_invoice_request(nostr_client: NostrClient, private_key_hex:
         }
     }
     response_str = json.dumps(response)
-    logger.info(f"Response: {response_str}")
 
     pk = bytes.fromhex(private_key_hex)
     private_key = PrivateKey(pk)
     wallet_connect_service_pubkey = private_key.public_key.hex()
-    logger.info(f"Wallet connect service pubkey: {wallet_connect_service_pubkey}")
 
     response_event = NostrEvent(
         pubkey=wallet_connect_service_pubkey,
@@ -96,11 +90,8 @@ async def handle_pay_invoice_request(nostr_client: NostrClient, private_key_hex:
         tags=[["e", request_event.id]],
         content=response_str
     )
-    logger.info(f"e = {request_event.id}")
     # response_event.tags = {"e": request_event.id}
     encrypted_response_event = encrypt_event(response_event, private_key_hex)
-    logger.info(f"Response event: {response_event.dict()}")
-    logger.info(f"Encrypted response event: {encrypted_response_event.dict()}")
     await nostr_client.publish_nostr_event(encrypted_response_event)
 
     return
@@ -115,7 +106,6 @@ async def wait_for_nostr_events(nostr_client: NostrClient, wallet_connect_servic
 
     while True:
         message = await nostr_client.get_event()
-        logger.info(f"Received message: {message}")
         await process_nostr_message(nostr_client, message, wallet_connect_service_prviate_key)
 
 
@@ -132,6 +122,5 @@ def get_service_capabilities_event(private_key_hex: str):
     )
     event.id = event.event_id
     event.sig = sign_message_hash(private_key_hex, bytes.fromhex(event.id))
-    logger.debug(f"Capabilities event: {event.dict()}")
 
     return event
