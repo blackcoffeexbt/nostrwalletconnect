@@ -61,8 +61,8 @@ async def handle_pay_invoice_request(nostr_client: NostrClient, private_key_hex:
     # message is a json string, turn into an object
     request_message = json.loads(request_message_str)
     invoice = request_message["params"]["invoice"]
+    # TODO: Implement checking and error code returns as per https://github.com/nostr-protocol/nips/blob/master/47.md#error-codes
     # TODO: get actual wallet ID from DB based on secret used in request
-    # TODO: create invoice_paid nostr response with payment_hash checking_id and other details
     pay_invoice_response_json = await pay_invoice(
         wallet_id="17332400405747fb9736ee418a52a09e",
         payment_request=invoice,
@@ -90,8 +90,8 @@ async def handle_pay_invoice_request(nostr_client: NostrClient, private_key_hex:
         tags=[["e", request_event.id]],
         content=response_str
     )
-    # response_event.tags = {"e": request_event.id}
     encrypted_response_event = encrypt_event(response_event, private_key_hex)
+    logger.info(f"Sending NWC response: {encrypted_response_event}")
     await nostr_client.publish_nostr_event(encrypted_response_event)
 
     return
